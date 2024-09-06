@@ -49,6 +49,7 @@ func main() {
 		var url, title string
 		var visitCount int
 		var lastVisitTime int64
+		// Scan the row data into variables (use pointers)
 		err := rows.Scan(&url, &title, &visitCount, &lastVisitTime)
 		if err != nil {
 			log.Fatalf("Failed to scan row: %v", err)
