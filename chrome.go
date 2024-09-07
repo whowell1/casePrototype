@@ -2,6 +2,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/user"
@@ -18,6 +19,8 @@ func main() {
 	}
 	// Define the path to the Chrome History file
 	chromeHistoryPath := filepath.Join(usr.HomeDir, "AppData", "Local", "Google", "Chrome", "User Data", "Default", "History")
+	// Introduce a small delay to ensure the file is not being written to by Chrome
+	time.Sleep(2 * time.Second)
 	// Make a temporary copy of the History file to avoid locking issues
 	tempPath := filepath.Join(os.TempDir(), "ChromeHistoryCopy")
 	err = copyFile(chromeHistoryPath, tempPath)
@@ -63,7 +66,7 @@ func main() {
 		rowIndex++
 	}
 	if err := rows.Err(); err != nil {
-		log.Fatalf("Error during row iteration: %v", err)
+		log.Fatalf("Error after scanning rows: %v", err)
 	}
 	// Save the Excel file
 	excelFileName := "ChromeHistory.xlsx"
@@ -72,7 +75,7 @@ func main() {
 	}
 	fmt.Printf("Browsing history successfully exported to %s\n", excelFileName)
 }
-// copyFile copies the file from source to destination
+// copyFile copies the file from source to destination using io.Copy for more reliable copying
 func copyFile(source, destination string) error {
 	srcFile, err := os.Open(source)
 	if err != nil {
@@ -84,7 +87,7 @@ func copyFile(source, destination string) error {
 		return fmt.Errorf("Error creating destination file: %v", err)
 	}
 	defer dstFile.Close()
-	_, err = dstFile.ReadFrom(srcFile)
+	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
 		return fmt.Errorf("Error copying file: %v", err)
 	}
@@ -98,6 +101,19 @@ func chromeTimeToUnix(webkitTime int64) string {
 	unixTime := (webkitTime - webkitEpochStart) / 1000000
 	return time.Unix(unixTime, 0).Format("2006-01-02 15:04:05")
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
